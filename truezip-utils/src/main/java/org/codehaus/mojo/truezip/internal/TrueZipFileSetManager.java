@@ -72,11 +72,11 @@ public class TrueZipFileSetManager
      * @throws MapperException if any
      * @see #getIncludedFiles(FileSet)
      */
-    public Map mapIncludedFiles( TrueZipFileSet fileSet )
+    public Map<String, String> mapIncludedFiles( TrueZipFileSet fileSet )
         throws MapperException
     {
         String[] sourcePaths = getIncludedFiles( fileSet );
-        Map mappedPaths = new LinkedHashMap();
+        Map<String, String> mappedPaths = new LinkedHashMap<String, String>();
 
         FileNameMapper fileMapper = MapperUtil.getFileNameMapper( fileSet.getMapper() );
 

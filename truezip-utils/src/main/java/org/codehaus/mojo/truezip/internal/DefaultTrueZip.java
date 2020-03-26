@@ -22,7 +22,10 @@ package org.codehaus.mojo.truezip.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.maven.shared.model.fileset.mappers.MapperException;
 import org.codehaus.mojo.truezip.TrueZip;
 import org.codehaus.mojo.truezip.TrueZipFileSet;
 import org.codehaus.plexus.util.StringUtils;
@@ -100,20 +103,27 @@ public class DefaultTrueZip
             oneFileSet.setDirectory( "." );
         }
 
-        String[] files = fileSetManager.getIncludedFiles( oneFileSet );
-
-        for ( int i = 0; i < files.length; ++i )
+        try
         {
-            String relativeDestPath = files[i];
-            if ( !StringUtils.isBlank( oneFileSet.getOutputDirectory() ) )
+            Map<String, String> files = fileSetManager.mapIncludedFiles( oneFileSet );
+
+            for ( Entry<String, String> file : files.entrySet() )
             {
-                relativeDestPath = oneFileSet.getOutputDirectory() + "/" + relativeDestPath;
+                String relativeDestPath = file.getValue();
+                if ( !StringUtils.isBlank( oneFileSet.getOutputDirectory() ) )
+                {
+                    relativeDestPath = oneFileSet.getOutputDirectory() + "/" + relativeDestPath;
+                }
+                TFile dest = new TFile( relativeDestPath );
+
+                TFile source = new TFile( oneFileSet.getDirectory(), file.getKey() );
+
+                this.copyFile( source, dest );
             }
-            TFile dest = new TFile( relativeDestPath );
-
-            TFile source = new TFile( oneFileSet.getDirectory(), files[i] );
-
-            this.copyFile( source, dest );
+        }
+        catch ( MapperException me )
+        {
+            throw new IOException( "The mapper element caused a failure", me );
         }
 
     }
